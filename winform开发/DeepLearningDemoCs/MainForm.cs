@@ -361,7 +361,21 @@ namespace DeepLearningDemoCs
                             {
                                 // 获取输出值
                                 string result1 = currentProcedure.ModuResult.GetOutputInt("out0").pIntVal[0].ToString();
-                                string result2 = currentProcedure.ModuResult.GetOutputString("out1").astStringVal[0].strValue;
+                                bool hasOutInChoose0 = currentOutputInfos.Any(item => item.Name == "out"
+                                                                                && item.TypeName == IMVS_MODULE_BASE_DATA_TYPE.IMVS_GRAP_TYPE_STRING);
+                                string result2;
+                                if (hasOutInChoose0)
+                                {
+                                    result2 = currentProcedure.ModuResult.GetOutputString("out").astStringVal[0].strValue;
+                                }
+                                else
+                                {
+                                    var out1Result = currentProcedure.ModuResult.GetOutputString("out1");
+                                    result2 = (out1Result.astStringVal != null && out1Result.astStringVal.Length > 0)
+                                        ? string.Join(";", out1Result.astStringVal.Select(item => item.strValue).Where(value => !string.IsNullOrEmpty(value)))
+                                        : string.Empty;
+                                }
+                                result2 = (result2 ?? string.Empty).Replace("\0", string.Empty);
                                 //string result1 = vmProcedure.ModuResult.GetOutputInt("out0").pIntVal[0].ToString();
                                 string result3 = currentProcedure.ModuResult.GetOutputFloat("out2").pFloatVal[0].ToString("F4");
 
