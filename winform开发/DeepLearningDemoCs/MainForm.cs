@@ -264,9 +264,16 @@ namespace DeepLearningDemoCs
                         case 10000:
                             if (vmProcessInfoList.nNum == 0) return;
 
-                            //string processName = vmProcessInfoList.astProcessInfo[0].strProcessName;
-                            VmProcedure vmProcedure = (VmProcedure)VmSolution.Instance[vmProcessInfoList.astProcessInfo[0].strProcessName];
-                            if (vmProcedure == null) return;
+                            VmProcedure currentProcedure = vmProcedure;
+                            if (currentProcedure == null && vmProcessInfoList.nNum > 0)
+                            {
+                                currentProcedure = (VmProcedure)VmSolution.Instance[vmProcessInfoList.astProcessInfo[0].strProcessName];
+                            }
+                            if (currentProcedure == null) return;
+
+                            List<VmDynamicIODefine.IoNameInfo> currentOutputInfos = currentProcedure.ModuResult.GetAllOutputNameInfo();
+                            bool hasOutString = currentOutputInfos.Any(item => item.Name == "out"
+                                                                        && item.TypeName == IMVS_MODULE_BASE_DATA_TYPE.IMVS_GRAP_TYPE_STRING);
 
                             // 解决左上角不能选图像输出问题：手动显示渲染控件的图像源下拉框
                             this.BeginInvoke(new Action(() =>
@@ -282,15 +289,26 @@ namespace DeepLearningDemoCs
                                 }
                             }));
 
+                            if (hasOutString)
+                            {
+                                var vmOutResult = currentProcedure.ModuResult.GetOutputString("out").astStringVal[0].strValue;
+                                Task.Run(() =>
+                                {
+                                    UpdateResult(vmOutResult);
+                                    LogFunction("Process running time：" + currentProcedure.ProcessTime.ToString() + "ms");
+                                });
+                                break;
+                            }
+
                             // 计数检测的输出解析 (预留，需要你根据实际配置补全字段名)
                             if (choose == 4)
                             {
                                 // 这里假设你在 VM 里把个数作为流程输出抛出，命名为 out0，且类型是 Int
-                                // string result1 = vmProcedure.ModuResult.GetOutputInt("out0").pIntVal[0].ToString();
+                                // string result1 = currentProcedure.ModuResult.GetOutputInt("out0").pIntVal[0].ToString();
                                 // Task.Run(() =>
                                 // {
                                 //     UpdateResult($"计数结果：{result1} 个");
-                                //     LogFunction("Process running time：" + vmProcedure.ProcessTime.ToString() + "ms");
+                                //     LogFunction("Process running time：" + currentProcedure.ProcessTime.ToString() + "ms");
                                 // });
                                 return; // 暂时直接 return，防止掉进最后的 default 报错
                             }
@@ -298,36 +316,36 @@ namespace DeepLearningDemoCs
                             if (choose == 3)
                             {
                                 // 获取输出值
-                                string result1 = vmProcedure.ModuResult.GetOutputString("out0").astStringVal[0].strValue;
+                                string result1 = currentProcedure.ModuResult.GetOutputString("out0").astStringVal[0].strValue;
                                 //string result1 = vmProcedure.ModuResult.GetOutputInt("out0").pIntVal[0].ToString();
-                                string result2 = vmProcedure.ModuResult.GetOutputFloat("out1").pFloatVal[0].ToString("F4");
+                                string result2 = currentProcedure.ModuResult.GetOutputFloat("out1").pFloatVal[0].ToString("F4");
 
                                 Task.Run(() =>
                                 {
                                     UpdateResult($"检测结果-缺陷类别名称：{result1}");
                                     UpdateResult($"缺陷目标置信度： {result2}");
-                                    LogFunction("Process running time：" + vmProcedure.ProcessTime.ToString() + "ms");
+                                    LogFunction("Process running time：" + currentProcedure.ProcessTime.ToString() + "ms");
                                 });
                             }
                             else if(choose==2)
                             {
                                 // 获取输出值
-                                string result1 = vmProcedure.ModuResult.GetOutputString("out0").astStringVal[0].strValue;
+                                string result1 = currentProcedure.ModuResult.GetOutputString("out0").astStringVal[0].strValue;
                                 //string result1 = vmProcedure.ModuResult.GetOutputInt("out0").pIntVal[0].ToString();
-                                string result2 = vmProcedure.ModuResult.GetOutputFloat("out1").pFloatVal[0].ToString("F4");
+                                string result2 = currentProcedure.ModuResult.GetOutputFloat("out1").pFloatVal[0].ToString("F4");
 
                                 Task.Run(() =>
                                 {
                                     UpdateResult($"检测结果-分类类别名称：{result1}");
                                     UpdateResult($"分类类别概率： {result2}");
-                                    LogFunction("Process running time：" + vmProcedure.ProcessTime.ToString() + "ms");
+                                    LogFunction("Process running time：" + currentProcedure.ProcessTime.ToString() + "ms");
                                 });
 
                             }
                             else if (choose == 1)
                             {
                                 // 获取输出值
-                                string result1 = vmProcedure.ModuResult.GetOutputString("out").astStringVal[0].strValue;
+                                string result1 = currentProcedure.ModuResult.GetOutputString("out").astStringVal[0].strValue;
                                 //string result1 = vmProcedure.ModuResult.GetOutputInt("out0").pIntVal[0].ToString();
                                 //string result2 = vmProcedure.ModuResult.GetOutputFloat("out1").pFloatVal[0].ToString("F4");
 
@@ -335,31 +353,31 @@ namespace DeepLearningDemoCs
                                 {
                                     UpdateResult($"检测结果：{result1}");
                                     //UpdateResult($"缺陷目标置信度： {result2}");
-                                    LogFunction("Process running time：" + vmProcedure.ProcessTime.ToString() + "ms");
+                                    LogFunction("Process running time：" + currentProcedure.ProcessTime.ToString() + "ms");
                                 });
 
                             }
                             else if(choose == 0)
                             {
                                 // 获取输出值
-                                string result1 = vmProcedure.ModuResult.GetOutputInt("out0").pIntVal[0].ToString();
-                                string result2 = vmProcedure.ModuResult.GetOutputString("out1").astStringVal[0].strValue;
+                                string result1 = currentProcedure.ModuResult.GetOutputInt("out0").pIntVal[0].ToString();
+                                string result2 = currentProcedure.ModuResult.GetOutputString("out1").astStringVal[0].strValue;
                                 //string result1 = vmProcedure.ModuResult.GetOutputInt("out0").pIntVal[0].ToString();
-                                string result3 = vmProcedure.ModuResult.GetOutputFloat("out2").pFloatVal[0].ToString("F4");
+                                string result3 = currentProcedure.ModuResult.GetOutputFloat("out2").pFloatVal[0].ToString("F4");
 
                                 Task.Run(() =>
                                 {
                                     UpdateResult($"字符个数：{result1}");
                                     UpdateResult($"检测字符串： {result2}");
                                     UpdateResult($"字符串置信度： {result3}");
-                                    LogFunction("Process running time：" + vmProcedure.ProcessTime.ToString() + "ms");
+                                    LogFunction("Process running time：" + currentProcedure.ProcessTime.ToString() + "ms");
                                 });
 
                             }
                             else
                             {
                                 // 其他流程默认读取 string 类型的 out（之前的逻辑）
-                                List<VmDynamicIODefine.IoNameInfo> ioNameInfos = vmProcedure.ModuResult.GetAllOutputNameInfo();
+                                List<VmDynamicIODefine.IoNameInfo> ioNameInfos = currentProcedure.ModuResult.GetAllOutputNameInfo();
                                 foreach (var item in ioNameInfos)
                                 {
                                     if (item.Name == "out" && item.TypeName != IMVS_MODULE_BASE_DATA_TYPE.IMVS_GRAP_TYPE_STRING)
@@ -372,11 +390,11 @@ namespace DeepLearningDemoCs
                                     }
                                 }
 
-                                var vmResult = vmProcedure.ModuResult.GetOutputString("out").astStringVal[0].strValue;
+                                var vmResult = currentProcedure.ModuResult.GetOutputString("out").astStringVal[0].strValue;
                                 Task.Run(() =>
                                 {
                                     UpdateResult(vmResult);
-                                    LogFunction("Process running time：" + vmProcedure.ProcessTime.ToString() + "ms");
+                                    LogFunction("Process running time：" + currentProcedure.ProcessTime.ToString() + "ms");
                                 });
                             }
 
