@@ -304,6 +304,33 @@ namespace DeepLearningDemoCs
                                 }
                             }));
 
+                            if (choose == 5)
+                            {
+                                string additionalTaskResult = hasOutString
+                                    ? GetJoinedStringOutput(currentProcedure, "out")
+                                    : GetJoinedStringOutput(currentProcedure, "out0");
+
+                                string[] expectedItems = { "杯", "碗", "勺", "筷" };
+                                List<string> missingItems = expectedItems
+                                    .Where(item => !additionalTaskResult.Contains(item))
+                                    .ToList();
+
+                                Task.Run(() =>
+                                {
+                                    UpdateResult($"附加任务原始结果：{additionalTaskResult}");
+                                    if (missingItems.Count > 0)
+                                    {
+                                        UpdateResult($"附加任务缺失项：{string.Join("、", missingItems)}");
+                                    }
+                                    else
+                                    {
+                                        UpdateResult("附加任务缺失项：无");
+                                    }
+                                    LogFunction("Process running time：" + currentProcedure.ProcessTime.ToString() + "ms");
+                                });
+                                break;
+                            }
+
                             if (hasOutString)
                             {
                                 var vmOutResult = GetJoinedStringOutput(currentProcedure, "out");
@@ -522,12 +549,13 @@ namespace DeepLearningDemoCs
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        ///// 路径可以根据你实际存放位置修改
-        private string pathCodeRecognition = @"C:\Users\Mike Lee\Desktop\新建文件夹\字符.sol";
-        private string pathSizeDetection = @"C:\Users\Mike Lee\Desktop\新建文件夹\尺寸.sol";
-        private string pathClassification = @"C:\Users\Mike Lee\Desktop\新建文件夹\分类.sol";
-        private string pathDefectDetection = @"C:\Users\Mike Lee\Desktop\新建文件夹\缺陷.sol";
-        private string pathCounting = @"C:\Users\Mike Lee\Desktop\新建文件夹\计数.sol";
+        private readonly string solutionFolder = AppDomain.CurrentDomain.BaseDirectory;
+        private string pathCodeRecognition => Path.Combine(solutionFolder, "字符.sol");
+        private string pathSizeDetection => Path.Combine(solutionFolder, "尺寸.sol");
+        private string pathClassification => Path.Combine(solutionFolder, "分类.sol");
+        private string pathDefectDetection => Path.Combine(solutionFolder, "缺陷.sol");
+        private string pathCounting => Path.Combine(solutionFolder, "计数.sol");
+        private string pathAdditionalTask => Path.Combine(solutionFolder, "附加任务.sol");
 
         private void LoadSolution(string solutionPath)
         {
@@ -948,8 +976,9 @@ namespace DeepLearningDemoCs
 
         private void button6_Click(object sender, EventArgs e)
         {
-            // 附加任务，尚未绑定特定 sol 或执行逻辑
-            AutoClosingMessageBox.Show("附加任务待开发...", "提示", 1500);
+            LoadSolutionWithUI(pathAdditionalTask);
+            AutoClosingMessageBox.Show("方案加载成功!", "提示", 1500);
+            choose = 5;
         }
 
         private void groupBox2_Enter(object sender, EventArgs e)
