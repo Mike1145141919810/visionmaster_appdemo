@@ -31,6 +31,21 @@ namespace DeepLearningDemoCs
         private Timer LoadSolutionIndicateTimer = new Timer();
         public int choose = 5;
 
+        private static string GetJoinedStringOutput(VmProcedure procedure, string outputName, string separator = ";")
+        {
+            var output = procedure.ModuResult.GetOutputString(outputName);
+            if (output.astStringVal == null || output.astStringVal.Length == 0)
+            {
+                return string.Empty;
+            }
+
+            return string.Join(separator,
+                output.astStringVal
+                      .Select(item => item.strValue)
+                      .Where(value => !string.IsNullOrEmpty(value)))
+                .Replace("\0", string.Empty);
+        }
+
         public MainForm()
         {
             InitializeComponent();
@@ -291,7 +306,7 @@ namespace DeepLearningDemoCs
 
                             if (hasOutString)
                             {
-                                var vmOutResult = currentProcedure.ModuResult.GetOutputString("out").astStringVal[0].strValue;
+                                var vmOutResult = GetJoinedStringOutput(currentProcedure, "out");
                                 Task.Run(() =>
                                 {
                                     UpdateResult(vmOutResult);
@@ -316,7 +331,7 @@ namespace DeepLearningDemoCs
                             if (choose == 3)
                             {
                                 // 获取输出值
-                                string result1 = currentProcedure.ModuResult.GetOutputString("out0").astStringVal[0].strValue;
+                                string result1 = GetJoinedStringOutput(currentProcedure, "out0");
                                 //string result1 = vmProcedure.ModuResult.GetOutputInt("out0").pIntVal[0].ToString();
                                 string result2 = currentProcedure.ModuResult.GetOutputFloat("out1").pFloatVal[0].ToString("F4");
 
@@ -330,7 +345,7 @@ namespace DeepLearningDemoCs
                             else if(choose==2)
                             {
                                 // 获取输出值
-                                string result1 = currentProcedure.ModuResult.GetOutputString("out0").astStringVal[0].strValue;
+                                string result1 = GetJoinedStringOutput(currentProcedure, "out0");
                                 //string result1 = vmProcedure.ModuResult.GetOutputInt("out0").pIntVal[0].ToString();
                                 string result2 = currentProcedure.ModuResult.GetOutputFloat("out1").pFloatVal[0].ToString("F4");
 
@@ -345,7 +360,7 @@ namespace DeepLearningDemoCs
                             else if (choose == 1)
                             {
                                 // 获取输出值
-                                string result1 = currentProcedure.ModuResult.GetOutputString("out").astStringVal[0].strValue;
+                                string result1 = GetJoinedStringOutput(currentProcedure, "out");
                                 //string result1 = vmProcedure.ModuResult.GetOutputInt("out0").pIntVal[0].ToString();
                                 //string result2 = vmProcedure.ModuResult.GetOutputFloat("out1").pFloatVal[0].ToString("F4");
 
@@ -366,16 +381,12 @@ namespace DeepLearningDemoCs
                                 string result2;
                                 if (hasOutInChoose0)
                                 {
-                                    result2 = currentProcedure.ModuResult.GetOutputString("out").astStringVal[0].strValue;
+                                    result2 = GetJoinedStringOutput(currentProcedure, "out");
                                 }
                                 else
                                 {
-                                    var out1Result = currentProcedure.ModuResult.GetOutputString("out1");
-                                    result2 = (out1Result.astStringVal != null && out1Result.astStringVal.Length > 0)
-                                        ? string.Join(";", out1Result.astStringVal.Select(item => item.strValue).Where(value => !string.IsNullOrEmpty(value)))
-                                        : string.Empty;
+                                    result2 = GetJoinedStringOutput(currentProcedure, "out1");
                                 }
-                                result2 = (result2 ?? string.Empty).Replace("\0", string.Empty);
                                 //string result1 = vmProcedure.ModuResult.GetOutputInt("out0").pIntVal[0].ToString();
                                 string result3 = currentProcedure.ModuResult.GetOutputFloat("out2").pFloatVal[0].ToString("F4");
 
@@ -404,7 +415,7 @@ namespace DeepLearningDemoCs
                                     }
                                 }
 
-                                var vmResult = currentProcedure.ModuResult.GetOutputString("out").astStringVal[0].strValue;
+                                var vmResult = GetJoinedStringOutput(currentProcedure, "out");
                                 Task.Run(() =>
                                 {
                                     UpdateResult(vmResult);
